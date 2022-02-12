@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie app with debouncing</title>
+    <style>
+        body{
+            background-color: #6B7280;
+        }
+
+        #searchDiv{
+            height: 20%;
+            width: 40%;
+            margin: auto;
+            
+        }
+        #search{
+            margin-bottom: 15px;
+            margin: auto;
+            margin-left: 32%;
+            height: 35px;
+            border-radius: 5px;
+            border-style: none;
+            text-align: center;
+            font-size: 12px;
+        }
+        #btn{
+            margin: auto;
+           height: 35px;
+           border-radius: 5px;
+           border-style: none;
+           text-align: center;
+        }
+        #movies{
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+            margin: auto;
+            grid-gap: 15px;
+        }
+        .movieDiv{
+            height: 450px;
+            margin-bottom: 5%;
+            overflow:inherit;
+            padding: 2%;
+        }
+
+        .image{
+            height: 70%;
+            width: 100%;
+        }
+        .movieTitle{
+            text-align: center;            
+        }
+        .releaseYear{
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="searchDiv">
+        <input type="text" id="search" oninput="debouncing(displayMovies, 1000)">
+        <button id="btn" onclick="search()">Search</button>
+    </div>
+    <div id="movies"></div>
+</body>
+</html>
+
+<script>
+    // let wall = document.getElementById('wall');
+    let movies = document.getElementById('movies');
+    let time;
+    
+
+
+    function search(){
+        movies.innerHTML = "";
+        clearTimeout(time);
+        // wall.innerHTML = "";
+        let searchFor = document.getElementById('search').value;
+        let url = `http://www.omdbapi.com/?s=${searchFor}&apikey=7b20b01a`;
+
+        fetch(url).then(function(response){
+            return response.json();
+        })
+        .then(function(response){
+            let data = response.Search;
+            console.log(data);
+            showMovies(data);
+        })
+        .catch(function(error){
+            console.log(error);
+        })
+
+
+        function showMovies(data){
+            data.forEach(function(user){
+                let div = document.createElement('div');
+                div.setAttribute('class', 'movieDiv')
+
+                let img = document.createElement('img');
+                img.src = user.Poster;
+                img.setAttribute('class', 'image');
+
+                let name = document.createElement('h1');
+                name.innerText = user.Title;
+                name.setAttribute('class', 'movieTitle')
+
+                let year = document.createElement('h3');
+                year.innerText = user.Year;
+                year.setAttribute('class', 'releaseYear')
+
+                div.append(img, year, name,);
+                movies.append(div);
+            })
+        }
+    }
+
+
+    async function searchMovie(){
+        try{
+            let name = document.getElementById('search').value;
+            let searchFor = document.getElementById('search').value;
+            let url = `http://www.omdbapi.com/?s=${searchFor}&apikey=7b20b01a`;
+
+            let response = await fetch(url);
+
+            let data = await response.json();
+
+            return data.Search;
+        }
+        catch(error){
+            console.log(error);
+        }
+    }
+
+    async function displayMovies() {
+        movies.innerHTML = "";
+        let movie_data = await searchMovie();
+
+        if(movie_data === undefined){
+            return false;
+        }
+        console.log(movie_data);
+
+        movie_data.forEach(function(movie){
+            let p = document.createElement('p');
+            p.setAttribute('class', 'results');
+            p.innerText = movie.Title;
+            movies.append(p);
+
+
+            p.addEventListener('click', function(){
+                
+                movies.innerHTML = "";
+                let div = document.createElement('div');
+
+                let img = document.createElement('img');
+                img.src = movie.Poster;
+
+                let name = document.createElement('h1');
+                name.textContent = movie.Title
+
+                let year = document.createElement('h2');
+                year.textContent = movie.Year;
+
+                let rating = document.createElement('h3');
+                rating.textContent = movie.imdbRating;
+
+                div.append(img, name, year, rating);
+                movies.append(div);
+                img.addEventListener('click', function(){
+                    movies.innerHTML = "";
+                // let div = document.createElement('div');
+
+                let img = document.createElement('img');
+                img.src = movie.Poster;
+
+                let name = document.createElement('h1');
+                name.textContent = movie.Title
+
+                let year = document.createElement('h2');
+                year.textContent = movie.Year;
+
+                let rating = document.createElement('h3');
+                rating.textContent = movie.imdbRating;
+
+                div.append(img, name, year, rating);
+                movies.append(div);
+                })
+            })
+
+        })
+    }
+
+    function debouncing(func, delay){
+        clearTimeout(time);
+
+        time = setTimeout(function() {
+            func();
+        }, delay);
+    }
+</script>
